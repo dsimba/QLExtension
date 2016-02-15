@@ -1,0 +1,8 @@
+C:\Letian\QLExtension\Output\Release\x86\QLExcel.dna
+C:\Letian\QLExtension\Output\Release\x86\App.config
+C:\Letian\QLExtension\Output\Release\x86\QLExcel.dll.config
+C:\Letian\QLExtension\Output\Release\x86\QLExcel.dll
+C:\Letian\QLExtension\Output\Release\x86\QLExcel.pdb
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExcel\obj\x86\Release\QLExcel.csprojResolveAssemblyReference.cache
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExcel\obj\x86\Release\QLExcel.dll
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExcel\obj\x86\Release\QLExcel.pdb

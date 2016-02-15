@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!--****************************** Project Header ******************************
+Project:	      QuantLib Extension (QLExtension)
+Author:			  Letian.zj@gmail.com
+URL:			  https://github.com/letianzj/QLExtension
+Copyright 2014 Letian_zj
+This file is part of  QuantLib Extension (QLExtension) Project.
+QuantLib Extension (QLExtension) is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation,
+either version 3 of the License, or (at your option) any later version.
+QuantTrading is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with QLExtension.
+If not, see http://www.gnu.org/licenses/.
+***************************************************************************-->
+
+<DnaLibrary Name="QLExcel" RuntimeVersion="v4.0">
+	<ExternalLibrary Path="QLExcel.dll" Pack="true" />
+  
+  <!--Some images taht can be used in the Ribon ui-->
+  <!--<Image Name="M" Path="images/m.png" Pack="true"/>-->
+
+  <!-- Below are three CustomUI elements used for different Excel versions.
+       Need not have all three - ExcelDna whatever is most appropriate.
+  -->
+  <CustomUI>
+    <!-- Inside here is the exact RibbonX xml passed to Excel -->
+    <!-- This will only be loaded for Excel 2010 because of the namespace -->
+    <customUI xmlns='http://schemas.microsoft.com/office/2009/07/customui' loadImage='LoadImage'>
+      <ribbon>
+        <tabs>
+          <tab id='QLExcelTab' label='QLExLIB'>
+            <group id='LoginGroup' label='Login'>
+              <button id='buttonLogin' label='Login' imageMso='Lock' size='large' onAction='RunTagMacro' tag='Login_Click' />
+              <button id='buttonError' label='Display Error Details' imageMso='GroupShowHideListView' size='large' onAction='Error_Click'/>
+            </group>
+            <group id='Workbooks' label='Workbooks'>
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Demo' label='Demo' imageMso="FunctionsFinancialInsertGallery">
+                <button id='StockTrading' label='StockTrading' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                <button id='VanillaOptionPricer' label='VanillaOptionPricer' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                <button id='SABRModel' label='SABRModel' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                <button id='PRNG' label='PRNG' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+              </menu>
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Products' label='Products' imageMso="FunctionsFinancialInsertGallery">
+                <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Rates' label='Rates' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='irWorkbook1' label='irWorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='irWorkbook2' label='irWorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='irWorkbook3' label='irWorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                </menu>
+                <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Credit' label='Credit' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='creditWorkbook1' label='creditWorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='creditWorkbook2' label='creditWorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='creditWorkbook3' label='creditWorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                </menu>
+                <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Commodity' label='Commodity' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='cmdtyWorkbook1' label='cmdtyWorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='cmdtyWorkbook2' label='cmdtyWorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='cmdtyWorkbook3' label='cmdtyWorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                </menu>
+                <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='FX' label='FX' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='fxWorkbook1' label='fxWorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='fxWorkbook2' label='fxWorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='fxWorkbook3' label='fxWorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                </menu>
+              </menu>  <!--end of menu Instruments-->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Portfolio' label='Portfolio' imageMso="FunctionsFinancialInsertGallery">
+                <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Performance' label='Performance' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='perfWorkbook1' label='perfWorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='perfWorkbook2' label='perfWorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='perfWorkbook3' label='perfWorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                </menu>
+              </menu> <!--end of menu Portfolio-->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='IRDemo' label='IRDemo' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='BookTrades' label='BookTrades' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='LoadHistCurve' label='LoadHistCurve' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='PublishCurve' label='PublishCurve' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+              </menu>
+              <!-- end of menu Treasury -->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Report' label='Report' imageMso="FunctionsFinancialInsertGallery">
+                <button id='rptWorkbook1' label='rptWorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                <button id='rptWorkbook2' label='rptWorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                <button id='rptWorkbook3' label='rptWorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+              </menu> <!-- end of menu Report -->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='Risk' label='Risk' imageMso="FunctionsFinancialInsertGallery">
+                <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='MarketRisk' label='MarketRisk' imageMso="FunctionsFinancialInsertGallery">
+                  <button id='riskorkbook1' label='riskorkbook1' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='riskorkbook2' label='riskorkbook2' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                  <button id='riskorkbook3' label='riskorkbook3' onAction="excelFile_Click" imageMso="FileSaveAsExcelXlsx"/>
+                </menu>
+              </menu>
+            </group>
+            <group id='functionGroup' label='QLExcel Functions'>
+              <!--Menu Time-->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='QLExcelTime' label='Time' imageMso="StartAfterPrevious">
+                <button id='qlTimeNow' label='qlTimeNow' onAction='Function_Click'/>
+                <button id='qlTimeToday' label='qlTimeToday' onAction='Function_Click'/>
+                <button id='qlTimeSetEvaluationDate' label='qlTimeSetEvaluationDate' onAction='Function_Click'/>
+                <button id='qlTimeGetEvaluationDate' label='qlTimeGetEvaluationDate' onAction='Function_Click'/>
+                <button id='qlTimeYearFraction' label='qlTimeYearFraction' onAction='Function_Click'/>
+                <button id='qlTimeBusinessDaysBetween' label='qlTimeBusinessDaysBetween' onAction='Function_Click'/>
+                <button id='qlTimeIsBusinessDay' label='qlTimeYearFraction' onAction='Function_Click'/>
+                <button id='qlTimeAdjustDate' label='qlTimeAdjustDate' onAction='Function_Click'/>
+                <button id='qlTimeAdvanceDate' label='qlTimeAdvanceDate' onAction='Function_Click'/>
+                <button id='qlTimeSchedule' label='qlTimeSchedule' onAction='Function_Click'/>
+              </menu>
+              <!--Menu Math-->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='QLExcelMath' label='Math' imageMso="TableDesign">
+                <button id='qlMathGenThreefryURng' label='qlMathGenThreefryURng' onAction='Function_Click'/>
+                <button id='qlMathGenThreefryGaussianRng' label='qlMathGenThreefryGaussianRng' onAction='Function_Click'/>
+                <button id='qlMathGenThreefryGammaRng' label='qlMathGenThreefryGammaRng' onAction='Function_Click'/>
+                <button id='qlMathLinearInterpolation' label='qlMathLinearInterpolation' onAction='Function_Click'/>
+                <button id='qlMathLogLinearInterpolation' label='qlMathLogLinearInterpolation' onAction='Function_Click'/>
+                <button id='qlMathGet1DInterpolation' label='qlMathGet1DInterpolation' onAction='Function_Click'/>
+                <button id='qlMathBiLinearInterpolation' label='qlMathBiLinearInterpolation' onAction='Function_Click'/>
+                <button id='qlMathGet2DInterpolation' label='qlMathGet2DInterpolation' onAction='Function_Click'/>
+              </menu>
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='QLExcelModel' label='Model' imageMso="DesignMode">
+                <button id='qlModelSABR' label='qlModelSABR' onAction='Function_Click'/>
+                <button id='qlModelGetSABRCalibratedParameters' label='qlModelGetSABRCalibratedParameters' onAction='Function_Click'/>
+                <button id='qlModelGetSABRInterpolatedValue' label='qlModelGetSABRInterpolatedValue' onAction='Function_Click'/>
+                <button id='qlModelSVI' label='qlModelSVI' onAction='Function_Click'/>
+                <button id='qlModelGetSVICalibratedParameters' label='qlModelGetSVICalibratedParameters' onAction='Function_Click'/>
+                <button id='qlModelGetSVIInterpolatedValue' label='qlModelGetSVIInterpolatedValue' onAction='Function_Click'/>
+                <button id='qlModelDoubleExponentialATM' label='qlModelDoubleExponentialATM' onAction='Function_Click'/>
+                <button id='qlModelGetDoubleExponentialCalibratedParameters' label='qlModelGetDoubleExponentialCalibratedParameters' onAction='Function_Click'/>
+                <button id='qlModelGetDoubleExponentialTermVol' label='qlModelGetDoubleExponentialTermVol' onAction='Function_Click'/>
+                <button id='qlModelDBExponentialATM' label='qlModelDBExponentialATM' onAction='Function_Click'/>
+                <button id='qlModelGetDBExponentialCalibratedParameters' label='qlModelGetDBExponentialCalibratedParameters' onAction='Function_Click'/>
+                <button id='qlModelGetDBExponentialTermVol' label='qlModelGetDBExponentialTermVol' onAction='Function_Click'/>
+              </menu>
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='QLExcelCurve' label='Curve' imageMso="CreateClassModule">
+                <button id='qlIndexesSetHistory' label='qlIndexesSetHistory' onAction='Function_Click'/>
+                <button id='qlIndexeGetHistory' label='qlIndexeGetHistory' onAction='Function_Click'/>
+                <button id='qlIndexesClearHistory' label='qlIndexesClearHistory' onAction='Function_Click'/>
+                <button id='qlCurveIRFlatForward' label='qlCurveIRFlatForward' onAction='Function_Click'/>
+                <button id='qlCurveIRDiscountCurve' label='qlCurveIRDiscountCurve' onAction='Function_Click'/>
+                <button id='qlCurveIRGetDiscountFactor' label='qlCurveIRGetDiscountFactor' onAction='Function_Click'/>
+                <button id='qlCurveCommodForwardsCurve' label='qlCurveCommodForwardsCurve' onAction='Function_Click'/>
+                <button id='qlCurveCommodDisplayForwardsCurve' label='qlCurveCommodDisplayForwardsCurve' onAction='Function_Click'/>
+                <button id='qlCurveCommodIndex' label='qlCurveCommodIndex' onAction='Function_Click'/>
+                <button id='qlCurveCommodForwardPrice' label='qlCurveCommodForwardPrice' onAction='Function_Click'/>
+              </menu>
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='QLExcelInst' label='Instrument' imageMso="GroupSmartArtQuickStyles">
+                <button id='qlInstEuropeanOptionBlackScholes' label='qlInstEuropeanOptionBlackScholes' onAction='Function_Click'/>
+                <button id='qlInstSpreadOptionKirk' label='qlInstSpreadOptionKirk' onAction='Function_Click'/>
+                <button id='qlInstGetOptionGreeks' label='qlInstGetOptionGreeks' onAction='Function_Click'/>
+                <button id='qlInstCommodityFuture' label='qlInstCommodityFuture' onAction='Function_Click'/>
+                <button id='qlInstCommodityVanillaSwap' label='qlInstCommodityVanillaSwap' onAction='Function_Click'/>
+                <button id='qlInstCommodityBasisSwap' label='qlInstCommodityBasisSwap' onAction='Function_Click'/>
+                <button id='qlInstGetInstrumentNPV' label='qlInstGetInstrumentNPV' onAction='Function_Click'/>
+                <button id='qlInstDisplayEnergySwap' label='qlInstDisplayEnergySwap' onAction='Function_Click'/>
+              </menu>
+              <!--Menu Operation -->
+              <menu xmlns='http://schemas.microsoft.com/office/2009/07/customui' itemSize='normal' id='QLExcelOps' label='Operation' imageMso="SmartArtChangeColorsGallery">
+                <button id='qlOpCheckCallFromWizard' label='qlOpCheckCallFromWizard' onAction='Function_Click'/>
+                <button id='qlOpCallerAddressControl' label='qlOpCallerAddressControl' onAction='Function_Click'/>
+                <button id='qlOpLibXllPath' label='qlOpLibXllPath' onAction='Function_Click'/>
+                <button id='qlOpGetEnumerationList' label='qlOpGetEnumerationList' onAction='Function_Click'/>
+                <button id='qlOpListObjects' label='qlOpListObjects' onAction='Function_Click'/>
+                <button id='qlOpObjectClassName' label='qlOpObjectClassName' onAction='Function_Click'/>
+                <button id='qlOpObjectCallerAddress' label='qlOpObjectCallerAddress' onAction='Function_Click'/>
+                <button id='qlOpObjectCreationTime' label='qlOpObjectCreationTime' onAction='Function_Click'/>
+                <button id='qlOpObjectUpdateTime' label='qlOpObjectUpdateTime' onAction='Function_Click'/>
+                <button id='qlOpLibXllBuildTime' label='qlOpLibXllBuildTime' onAction='Function_Click'/>
+                <button id='qlOpLibXllBuiltBy' label='qlOpLibXllBuiltBy' onAction='Function_Click'/>
+                <button id='qlOpVersion' label='qlOpVersion' onAction='Function_Click'/>
+              </menu>
+            </group>
+            <group id='helpGroup' label='Help'>
+              <button id='buttonReadData' label='Retrieve Data' imageMso="FilePublishExcelServices" size='large' onAction='RunTagMacro' tag='ReadData_Click' />
+              <button id='buttonHelper' label='Help Context' imageMso='ShapeBasicsHelp' size='large' onAction='Help_Click'/>
+              <button id='buttonAbout' label='About QLEX' imageMso="AddOrRemoveAttendees" size ='large' onAction='About_Click'/>
+            </group>
+          </tab>
+        </tabs>
+      </ribbon>
+    </customUI>
+  </CustomUI>
+</DnaLibrary>

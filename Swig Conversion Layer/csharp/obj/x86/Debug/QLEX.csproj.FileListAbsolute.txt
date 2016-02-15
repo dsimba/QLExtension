@@ -1,0 +1,5 @@
+C:\Workspace\QLExtension\Output\Debug\QLEX.dll
+C:\Workspace\QLExtension\Output\Debug\QLEX.pdb
+C:\Workspace\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Debug\QLEX.csprojResolveAssemblyReference.cache
+C:\Workspace\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Debug\QLEX.dll
+C:\Workspace\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Debug\QLEX.pdb

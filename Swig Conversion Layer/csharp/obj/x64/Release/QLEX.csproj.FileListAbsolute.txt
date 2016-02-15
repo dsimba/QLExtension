@@ -1,0 +1,2 @@
+C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\bin\x64\Release\QLEX.dll
+C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x64\Release\QLEX.dll

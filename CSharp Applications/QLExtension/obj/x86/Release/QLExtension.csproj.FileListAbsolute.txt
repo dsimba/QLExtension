@@ -1,0 +1,6 @@
+C:\Letian\QLExtension\Output\Release\x86\QLExtLib.dll.config
+C:\Letian\QLExtension\Output\Release\x86\QLExtLib.dll
+C:\Letian\QLExtension\Output\Release\x86\QLExtLib.pdb
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExtension\obj\x86\Release\QLExtension.csprojResolveAssemblyReference.cache
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExtension\obj\x86\Release\QLExtLib.dll
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExtension\obj\x86\Release\QLExtLib.pdb

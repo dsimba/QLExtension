@@ -1,0 +1,6 @@
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExtensionUnitTest\obj\x86\Release\QLExtensionUnitTest.csprojResolveAssemblyReference.cache
+C:\Letian\QLExtension\Output\Release\x86\QLExtensionUnitTest.dll.config
+C:\Letian\QLExtension\Output\Release\x86\QLExtensionUnitTest.dll
+C:\Letian\QLExtension\Output\Release\x86\QLExtensionUnitTest.pdb
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExtensionUnitTest\obj\x86\Release\QLExtensionUnitTest.dll
+C:\Letian\QLExtension\QLExtension\CSharp Applications\QLExtensionUnitTest\obj\x86\Release\QLExtensionUnitTest.pdb

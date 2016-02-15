@@ -1,0 +1,9 @@
+C:\Workspace\ExcAnalytics\ExcAnalytics\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.csprojResolveAssemblyReference.cache
+C:\Workspace\ExcAnalytics\Output\Release\QLEX.dll
+C:\Workspace\ExcAnalytics\ExcAnalytics\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.dll
+C:\Workspace\QLExtension\Output\Release\QLEX.dll
+C:\Workspace\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.dll
+C:\Workspace\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.csprojResolveAssemblyReference.cache
+C:\Letian\QLExtension\Output\Release\QLEX.dll
+C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.dll
+C:\Letian\QLExtension\Output\Release\x86\QLEX.dll

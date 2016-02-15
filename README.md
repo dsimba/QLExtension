@@ -12,10 +12,10 @@ Current worksheets include Interest rate dual curve bootstrapping, CDS curve, RT
 ### Keywords
 <b>Quantitative</b>: Mathematical Finance, Asset Pricing, Derivatives, Risk Management.
 
-<b>Technical</b>: QuantLib, ExcelDna, C++/C#, SWIG, RTD. HPC.
+<b>Technical</b>: QuantLib, ExcelDna, C++/C#, SWIG, RTD.
 
 ### Run Compiled
-Download and upzip the file Compiled.zip located in the project root directory. Start Excel and open QLExcel-addin-x86.xll from where you unzipped the file. A Ribbon tab called QLExLIB should show up. All functions start with ql, for example, call Excel function qltimetoday() it will return today's date. There are demos in the Demo and IRDemo workbooks dropdown menu.
+Download and upzip the file Compiled.zip located in the project root directory. Start Excel and open QLExcel-addin-x86.xll from where you unzipped the file. A Ribbon tab called QLExLIB should show up. All functions start with ql, for example, call Excel function qltimetoday() it will return today's date. There are demos such as Black-Scholes and Dual Curve bootstrapping in the Demo and IRDemo workbooks dropdown menu respectively.
 
 ### Run Source Code
 (1) Put boost, compiled QuantLib, and swigwin in folder c:\CLib. If you use different path, you have to change project reference path accordingly.

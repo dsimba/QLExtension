@@ -122,6 +122,7 @@
     </Compile>
     <Compile Include="Models\Math.cs" />
     <Compile Include="Ops\Operation.cs" />
+    <Compile Include="Ops\WindowsOp.cs" />
     <Compile Include="Risk\PFE.cs" />
     <Compile Include="Rtd\RTD.cs" />
     <Compile Include="Instruments\OptionPricer.cs" />

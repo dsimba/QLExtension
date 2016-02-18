@@ -140,7 +140,7 @@ namespace QLExcel
 
         public static string getActiveCellAddress()
         {
-            if (Operation.CallerAddressFlag == false)
+            if (Ops.Operation.CallerAddressFlag == false)
                 return "getActiveCellAddress";
 
             ExcelReference reference = getActiveReference();
@@ -304,7 +304,7 @@ namespace QLExcel
 
         public static bool CallFromWizard()
         {
-            if (Operation.CallFromWizardFlag == false)
+            if (Ops.Operation.CallFromWizardFlag == false)
                 return false;
 
             Process currentProcess = Process.GetCurrentProcess();

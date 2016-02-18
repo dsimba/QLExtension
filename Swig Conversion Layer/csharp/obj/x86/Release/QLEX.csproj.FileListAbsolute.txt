@@ -7,3 +7,4 @@ C:\Workspace\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Releas
 C:\Letian\QLExtension\Output\Release\QLEX.dll
 C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.dll
 C:\Letian\QLExtension\Output\Release\x86\QLEX.dll
+C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Release\QLEX.csprojResolveAssemblyReference.cache

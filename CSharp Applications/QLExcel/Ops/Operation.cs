@@ -22,7 +22,7 @@ using ExcelDna.Integration;
 using ExcelDna.Integration.CustomUI;
 using ExcelDna.Logging;
 
-namespace QLExcel
+namespace QLExcel.Ops
 {
     sealed public class Operation
     {

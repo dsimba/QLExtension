@@ -58,6 +58,9 @@ namespace QLEX.Instruments
         public List<string> SecondLegSchedules { get; set; }             // flexible schedules, e.g., counting for stub
 
         public double Spread { get; set; }
+
+        [XmlIgnore]
+        public QLEX.GenericSwap qlswap_ = null;
         #endregion
 
         public bool IsScheduleGiven { get; set; } 
@@ -74,8 +77,8 @@ namespace QLEX.Instruments
             
             FixingDays = 2;
             TradeDate = "20150721";
-            SettlementDate = "20150723";
-            MaturityDate = "20200723";
+            SettlementDate = "";
+            MaturityDate = "";
             Tenor = "5Y";
 
             FirstLegIndex = "FIXED";
@@ -87,7 +90,7 @@ namespace QLEX.Instruments
             FirstLegEOM = true;
             FirstLegNotionals = new List<double>();
             FirstLegNotionals.Add(1e6);
-            FirstLegNotionals.Add(0);
+            //FirstLegNotionals.Add(1e6);             // the last one is used if size() < # of periods
             FirstLegSchedules = new List<string>();
             FirstLegSchedules.Add(SettlementDate);
             FirstLegSchedules.Add(MaturityDate);
@@ -101,7 +104,7 @@ namespace QLEX.Instruments
             SecondLegDateGenerationRule = "Backward";
             SecondLegNotionals = new List<double>();
             SecondLegNotionals.Add(1e6);
-            SecondLegNotionals.Add(0);
+            //SecondLegNotionals.Add(1e6);
             SecondLegSchedules = new List<string>();
             SecondLegSchedules.Add(SettlementDate);
             SecondLegSchedules.Add(MaturityDate);
@@ -135,7 +138,169 @@ namespace QLEX.Instruments
         }
 
         #region conversion
-        // do it in xll
+        public void ConstructSwap(IborIndex idx1 = null, IborIndex idx2 = null)
+        {
+            _GenericSwap.Type type = SwapType == "Payer" ? _GenericSwap.Type.Payer : _GenericSwap.Type.Receiver;
+            QLEX.Calendar cal_gbp = new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange);
+            bool hasois = SecondLegIndex.Contains("OIS") ? true : false;            // OIS is only in FIXED-OIS pair
+
+            if (IsScheduleGiven)
+            {
+                //************************** First Leg *******************************                    
+                DoubleVector notional1 = new DoubleVector();
+                foreach (var nl in FirstLegNotionals)
+                {
+                    notional1.Add(nl);
+                }
+                DateVector sch1 = new DateVector();
+                foreach (var dt in FirstLegSchedules)
+                {
+                    sch1.Add(QLEX.QLConverter.DateTimeToDate(QLEX.QLConverter.StringToDateTime(dt)));
+                }
+                
+                Calendar cal1 = QLEX.QLConverter.ConvertObject<Calendar>(FirstLegCalendar);
+                if (!hasois)
+                {
+                    cal1 = new QLEX.JointCalendar(cal_gbp, cal1, QLEX.JointCalendarRule.JoinHolidays);
+                }
+
+                DayCounter dc1 = QLEX.QLConverter.ConvertObject<DayCounter>(FirstLegDayCounter);
+                BusinessDayConvention bdc1 = QLEX.QLConverter.ConvertObject<BusinessDayConvention>(FirstLegConvention);
+                Schedule Schedule1 = new Schedule(sch1, cal1, bdc1);
+
+                //************************** Second Leg *******************************                 
+                DoubleVector notional2 = new DoubleVector();
+                foreach (var nl in SecondLegNotionals)
+                {
+                    notional2.Add(nl);
+                }
+                DateVector sch2 = new DateVector();
+                foreach (var dt in SecondLegSchedules)
+                {
+                    sch2.Add(QLEX.QLConverter.DateTimeToDate(QLEX.QLConverter.StringToDateTime(dt)));
+                }
+
+                Calendar cal2 = QLEX.QLConverter.ConvertObject<Calendar>(SecondLegCalendar);
+                if (!hasois)
+                {
+                    cal2 = new QLEX.JointCalendar(cal_gbp, cal2, QLEX.JointCalendarRule.JoinHolidays);
+                }
+
+                DayCounter dc2 = QLEX.QLConverter.ConvertObject<DayCounter>(SecondLegDayCounter);
+                BusinessDayConvention bdc2 = QLEX.QLConverter.ConvertObject<BusinessDayConvention>(SecondLegConvention);
+                Schedule Schedule2 = new Schedule(sch2, cal2, bdc2);
+
+                //************************** swap ******************************
+                if (FirstLegIndex == "FIXED")
+                {
+                    if (hasois)
+                    {
+                        qlswap_ = new GenericSwap(type, notional2, Schedule2, Schedule2, FixedRate, dc2,
+                                                 notional2, Schedule2, Schedule2, idx2, dc2, Spread, hasois);
+                    }
+                    else
+                    {
+                        qlswap_ = new GenericSwap(type, notional1, Schedule1, Schedule1, FixedRate, dc1,
+                                                 notional2, Schedule2, Schedule2, idx2, dc2, Spread, hasois);
+                    }
+                    
+                }
+                else
+                {
+                    qlswap_ = new GenericSwap(type, notional1, Schedule1, Schedule1, idx1, dc1,
+                                                 notional2, Schedule2, Schedule2, idx2, dc2, 0.0, Spread, hasois);
+                }
+            }  // end of schedule given swap construction
+            else
+            {
+                //************************** First Leg *******************************                    
+                Calendar cal1 = QLEX.QLConverter.ConvertObject<Calendar>(FirstLegCalendar);
+                if (!hasois)
+                {
+                    cal1 = new QLEX.JointCalendar(cal_gbp, cal1, QLEX.JointCalendarRule.JoinHolidays);
+                }
+                DayCounter dc1 = QLEX.QLConverter.ConvertObject<DayCounter>(FirstLegDayCounter);
+                BusinessDayConvention bdc1 = QLEX.QLConverter.ConvertObject<BusinessDayConvention>(FirstLegConvention);
+                Date tradedate = QLEX.QLConverter.DateTimeToDate(QLEX.QLConverter.StringToDateTime(TradeDate));
+                tradedate = cal1.adjust(tradedate);
+
+                Date startdate;
+                if (string.IsNullOrEmpty(SettlementDate))
+                {
+                    startdate = cal1.advance(tradedate, FixingDays, TimeUnit.Days);
+                }
+                else
+                {
+                    startdate = QLEX.QLConverter.DateTimeToDate(QLEX.QLConverter.StringToDateTime(SettlementDate));
+                }
+
+                Date terminatedate;
+                if (string.IsNullOrEmpty(MaturityDate))
+                {
+                    // then tenor should not be zero
+                    Period tenor = QLEX.QLConverter.ConvertObject<Period>(Tenor);
+                    //Calendar nullcal = new NullCalendar();
+                    terminatedate = cal1.advance(startdate, tenor);
+                }
+                else
+                {
+                    terminatedate = QLEX.QLConverter.DateTimeToDate(QLEX.QLConverter.StringToDateTime(MaturityDate));
+                }
+
+                DateGeneration.Rule dgr1 = QLEX.QLConverter.ConvertObject<DateGeneration.Rule>(FirstLegDateGenerationRule);
+
+                Frequency freq1 = QLEX.QLConverter.ConvertObject<Frequency>(FirstLegFrequency);
+                Schedule schedule1 = new Schedule(startdate, terminatedate, new Period(freq1), cal1,
+                    bdc1, bdc1, dgr1, FirstLegEOM);
+
+                //************************** Second Leg *******************************
+                Calendar cal2 = QLEX.QLConverter.ConvertObject<Calendar>(SecondLegCalendar);
+                if (!hasois)
+                {
+                    cal2 = new QLEX.JointCalendar(cal_gbp, cal2, QLEX.JointCalendarRule.JoinHolidays);
+                }
+                DayCounter dc2 = QLEX.QLConverter.ConvertObject<DayCounter>(SecondLegDayCounter);
+                BusinessDayConvention bdc2 = QLEX.QLConverter.ConvertObject<BusinessDayConvention>(SecondLegConvention);
+
+
+                DateGeneration.Rule dgr2 = QLEX.QLConverter.ConvertObject<DateGeneration.Rule>(SecondLegDateGenerationRule);
+
+                Frequency freq2 = QLEX.QLConverter.ConvertObject<Frequency>(SecondLegFrequency);
+                Schedule schedule2 = new Schedule(startdate, terminatedate, new Period(freq2), cal2,
+                    bdc2, bdc2, dgr2, SecondLegEOM);
+
+                //************************** swap ******************************
+                DoubleVector notional1 = new DoubleVector();
+                DoubleVector notional2 = new DoubleVector();
+                foreach (var nl in FirstLegNotionals)
+                {
+                    notional1.Add(nl);
+                }
+                foreach (var nl in SecondLegNotionals)
+                {
+                    notional2.Add(nl);
+                }
+
+                if (FirstLegIndex == "FIXED")
+                {
+                    if (hasois)
+                    {
+                        qlswap_ = new GenericSwap(type, notional2, schedule2, schedule2, FixedRate, dc2,
+                                                 notional2, schedule2, schedule2, idx2, dc2, Spread, hasois);
+                    }
+                    else
+                    {
+                        qlswap_ = new GenericSwap(type, notional1, schedule1, schedule1, FixedRate, dc1,
+                                                 notional2, schedule2, schedule2, idx2, dc2, Spread, hasois);
+                    }
+                }
+                else
+                {
+                    qlswap_ = new GenericSwap(type, notional1, schedule1, schedule1, idx1, dc1,
+                                                 notional2, schedule2, schedule2, idx2, dc2, 0.0, Spread, hasois);
+                }
+            } // end of schedule not given swap construction
+        }
         #endregion
 
         #region serialization

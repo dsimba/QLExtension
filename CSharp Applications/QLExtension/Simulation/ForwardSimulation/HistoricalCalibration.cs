@@ -1,4 +1,7 @@
-﻿using System;
+﻿// http://www.pricederivatives.com/en/derivatives-cva-example-monte-carlo-python/
+// https://ipythonquant.wordpress.com/2015/04/08/expected-exposure-and-pfe-simulation-with-quantlib-and-python/
+// http://gouthamanbalaraman.com/blog/hull-white-simulation-quantlib-python.html
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

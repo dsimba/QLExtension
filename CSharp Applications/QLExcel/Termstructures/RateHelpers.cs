@@ -25,6 +25,10 @@ namespace QLExcel
     
     public class RateHelpers
     {
+        //static QLEX.Calendar cal_gbp = new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange);
+        //static QLEX.Calendar cal_usd = new QLEX.UnitedStates(QLEX.UnitedStates.Market.Settlement);
+        //static QLEX.JointCalendar cal_usd_libor = new QLEX.JointCalendar(cal_gbp, cal_usd, QLEX.JointCalendarRule.JoinHolidays);
+
         #region LIB3M
         [ExcelFunction(Description = "create deposit rate helper", Category = "QLExcel - Rates")]
         public static string qlIRCurveDepositRateHelper(
@@ -41,10 +45,6 @@ namespace QLExcel
 
             try
             {
-                //QLEX.Calendar cal1 = new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange);
-                //QLEX.Calendar cal2 = new QLEX.UnitedStates(QLEX.UnitedStates.Market.Settlement);
-                //QLEX.JointCalendar calendar = new QLEX.JointCalendar(cal1, cal2, QLEX.JointCalendarRule.JoinHolidays);
-
                 // use default value
                 QLEX.IborIndex idx = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
                 if (ExcelUtil.isNull(fixingDays))

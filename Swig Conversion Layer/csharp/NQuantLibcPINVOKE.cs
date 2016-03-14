@@ -10514,6 +10514,15 @@ class NQuantLibcPINVOKE {
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_new_SpreadCdsHelper__SWIG_5")]
   public static extern global::System.IntPtr new_SpreadCdsHelper__SWIG_5(double jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, int jarg3, global::System.Runtime.InteropServices.HandleRef jarg4, int jarg5, int jarg6, int jarg7, global::System.Runtime.InteropServices.HandleRef jarg8, double jarg9, global::System.Runtime.InteropServices.HandleRef jarg10);
 
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_SpreadCdsHelper_impliedQuote")]
+  public static extern double SpreadCdsHelper_impliedQuote(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_SpreadCdsHelper_quote")]
+  public static extern global::System.IntPtr SpreadCdsHelper_quote(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_SpreadCdsHelper_latestDate")]
+  public static extern global::System.IntPtr SpreadCdsHelper_latestDate(global::System.Runtime.InteropServices.HandleRef jarg1);
+
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_delete_SpreadCdsHelper")]
   public static extern void delete_SpreadCdsHelper(global::System.Runtime.InteropServices.HandleRef jarg1);
 
@@ -10540,6 +10549,15 @@ class NQuantLibcPINVOKE {
 
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_new_UpfrontCdsHelper__SWIG_7")]
   public static extern global::System.IntPtr new_UpfrontCdsHelper__SWIG_7(double jarg1, double jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, int jarg4, global::System.Runtime.InteropServices.HandleRef jarg5, int jarg6, int jarg7, int jarg8, global::System.Runtime.InteropServices.HandleRef jarg9, double jarg10, global::System.Runtime.InteropServices.HandleRef jarg11);
+
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_UpfrontCdsHelper_impliedQuote")]
+  public static extern double UpfrontCdsHelper_impliedQuote(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_UpfrontCdsHelper_quote")]
+  public static extern global::System.IntPtr UpfrontCdsHelper_quote(global::System.Runtime.InteropServices.HandleRef jarg1);
+
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_UpfrontCdsHelper_latestDate")]
+  public static extern global::System.IntPtr UpfrontCdsHelper_latestDate(global::System.Runtime.InteropServices.HandleRef jarg1);
 
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_delete_UpfrontCdsHelper")]
   public static extern void delete_UpfrontCdsHelper(global::System.Runtime.InteropServices.HandleRef jarg1);

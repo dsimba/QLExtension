@@ -275,7 +275,20 @@ class SpreadCdsHelperPtr : public boost::shared_ptr<DefaultProbabilityHelper> {
                                     recoveryRate,discountCurve,
                                     settlesAccrual,paysAtDefaultTime));
         }
-    }
+
+		Real impliedQuote() const {
+            return boost::dynamic_pointer_cast<SpreadCdsHelper>(*self)
+                ->impliedQuote();
+        }
+		Handle<Quote> quote() const {
+			return boost::dynamic_pointer_cast<SpreadCdsHelper>(*self)
+                ->quote();
+		}
+		Date latestDate() const {
+			return boost::dynamic_pointer_cast<SpreadCdsHelper>(*self)
+                ->latestDate();
+		}
+	}
 };
 
 
@@ -327,6 +340,20 @@ class UpfrontCdsHelperPtr : public boost::shared_ptr<DefaultProbabilityHelper> {
                                      recoveryRate,discountCurve,upfrontSettlementDays,
                                      settlesAccrual,paysAtDefaultTime));
         }
+
+		Real impliedQuote() const {
+            return boost::dynamic_pointer_cast<UpfrontCdsHelper>(*self)
+                ->impliedQuote();
+        }
+
+		Handle<Quote> quote() const {
+			return boost::dynamic_pointer_cast<UpfrontCdsHelper>(*self)
+                ->quote();
+		}
+		Date latestDate() const {
+			return boost::dynamic_pointer_cast<UpfrontCdsHelper>(*self)
+                ->latestDate();
+		}
     }
 };
 

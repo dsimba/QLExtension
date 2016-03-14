@@ -63,6 +63,24 @@ public class SpreadCdsHelper : DefaultProbabilityHelper {
     if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
   }
 
+  public double impliedQuote() {
+    double ret = NQuantLibcPINVOKE.SpreadCdsHelper_impliedQuote(swigCPtr);
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public QuoteHandle quote() {
+    QuoteHandle ret = new QuoteHandle(NQuantLibcPINVOKE.SpreadCdsHelper_quote(swigCPtr), true);
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public Date latestDate() {
+    Date ret = new Date(NQuantLibcPINVOKE.SpreadCdsHelper_latestDate(swigCPtr), true);
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
 }
 
 }

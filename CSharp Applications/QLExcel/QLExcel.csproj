@@ -87,6 +87,10 @@
       <HintPath>..\..\packages\ExcelDna.Integration.0.33.9\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="HDF5DotNet, Version=1.8.9.0, Culture=neutral, PublicKeyToken=a4952c8df86d6e8c, processorArchitecture=x86">
+      <HintPath>..\..\packages\HDF5DotNet.x86.1.8.9\lib\net40\HDF5DotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <Private>True</Private>
@@ -179,7 +183,7 @@ echo xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna.xll" "$
 echo xcopy "$(TargetDir)QLExcel-AddIn.dna*" "$(TargetDir)QLExcel-AddIn64.dna*" /C /Y
 echo xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna64.xll" "$(TargetDir)QLExcel-AddIn64.xll*" /C /Y
 echo "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)QLExcel-AddIn.dna" /Y
-echo "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)QLExcel-AddIn64.dna" /Y</PostBuildEvent>
+echo "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)QLExcel-AddIn64.dna" /Yxcopy /s /y "$(SolutionDir)packages\HDF5DotNet.x86.1.8.9\NativeBinaries\*.*" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>if not exist $(TargetDir)ExcelDna.Integration.dll copy $(SolutionDir)packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna.Integration.dll $(TargetDir)ExcelDna.Integration.dll</PreBuildEvent>

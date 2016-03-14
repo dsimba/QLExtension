@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using QLEX;
+using HDF5DotNet;
 
 namespace QLEXUnitTest
 {
@@ -912,21 +913,26 @@ namespace QLEXUnitTest
 
             Calendar cal_cds = new WeekendsOnly();
             Date today = Settings.instance().getEvaluationDate();
+            today = new Date(11, Month.March, 2016);
+            Settings.instance().setEvaluationDate(today);
             today = cal_cds.adjust(today);
             int settlementDays = 1;
             DayCounter dc = new Actual360();
 
-            QuoteHandle hazardrate = new QuoteHandle(new SimpleQuote(0.01));
-            FlatHazardRate fhr = new FlatHazardRate(today, hazardrate, dc);
-            Date enddate = cal_cds.advance(today, new Period(1, TimeUnit.Years));
-            double answer = fhr.defaultDensity(enddate);        // h(t,T) * Q(t,T) = - dQ(t,T)/dT = unconditional instantaneous default
-            answer = fhr.hazardRate(enddate);                   // h(t,T) = E[r(t)] = instanstaneous forward conditional default
-            answer = fhr.survivalProbability(enddate);          // Q(t,T) = P(t,T) zero coupon bond price
-            answer = fhr.defaultProbability(enddate);           // 1 - Q(t,T)
+            //QuoteHandle hazardrate = new QuoteHandle(new SimpleQuote(0.01));
+            //FlatHazardRate fhr = new FlatHazardRate(today, hazardrate, dc);
+            //Date enddate = cal_cds.advance(today, new Period(1, TimeUnit.Years));
+            //double answer = fhr.defaultDensity(enddate);        // h(t,T) * Q(t,T) = - dQ(t,T)/dT = unconditional instantaneous default
+            //answer = fhr.hazardRate(enddate);                   // h(t,T) = E[r(t)] = instanstaneous forward conditional default
+            //answer = fhr.survivalProbability(enddate);          // Q(t,T) = P(t,T) zero coupon bond price
+            //answer = fhr.defaultProbability(enddate);           // 1 - Q(t,T)
 
             List<QLEX.Date> dates = new List<QLEX.Date>();
             QLEX.DateVector dtv = new QLEX.DateVector();
-            QLEX.DoubleVector discv = new QLEX.DoubleVector();
+            QLEX.DoubleVector defaultdensity = new QLEX.DoubleVector();
+            QLEX.DoubleVector hazardrate = new QLEX.DoubleVector();
+            QLEX.DoubleVector survivalprobability = new QLEX.DoubleVector();
+            QLEX.DoubleVector defaultprobability = new QLEX.DoubleVector();
 
             double[] quote = new double[]
             {
@@ -946,7 +952,7 @@ namespace QLEXUnitTest
 
             Frequency frequency = Frequency.Quarterly;
             BusinessDayConvention convention = BusinessDayConvention.Following;
-            DateGeneration.Rule rule = DateGeneration.Rule.CDS;
+            DateGeneration.Rule rule = DateGeneration.Rule.TwentiethIMM;
             DayCounter dayCounter = new Thirty360();
             double recoveryRate = 0.4;
 
@@ -956,64 +962,81 @@ namespace QLEXUnitTest
 
             DefaultProbabilityHelperVector dphv = new DefaultProbabilityHelperVector();
 
-            dates.Add(today);
+            dates.Add(today+1);
             for (int i = 0; i < n.GetLength(0); i++)
             {
-                DefaultProbabilityHelper dph = new SpreadCdsHelper(quote[i], new Period(n[i], TimeUnit.Years), settlementDays, cal_cds,
+                SpreadCdsHelper dph = new SpreadCdsHelper(quote[i], new Period(n[i], TimeUnit.Years), settlementDays, cal_cds,
                     frequency, convention, rule, dayCounter, recoveryRate, discountCurve);
+                dates.Add(dph.latestDate());
                 dphv.Add(dph);
             }
             
             RelinkableDefaultProbabilityTermStructureHandle piecewiseCurve = new RelinkableDefaultProbabilityTermStructureHandle();
-            piecewiseCurve.linkTo(new PiecewiseFlatHazardRate(today, dphv, dayCounter));
+            piecewiseCurve.linkTo(new PiecewiseFlatHazardRate(today, dphv, dayCounter));        // BackwardFlat
 
             dtv.Clear();
-            discv.Clear();
-            /*foreach (var dt in dates)
-            {
-                double disc = yth.discount(dt);
-                dtv.Add(dt);
-                discv.Add(disc);
-            }*/
-
-            ////////////////////////////////////////// rebuild curve and reprice /////////////////////////////////////////////////////
-            /*QLEX.YieldTermStructure yth_usdlib12m = new QLEX.DiscountCurve(dtv, discv, dc_act_360, cal_usd_gbp);
-            discv2.Clear();
+            defaultdensity.Clear();
+            hazardrate.Clear();
+            survivalprobability.Clear();
+            defaultprobability.Clear();
+            double value;
             foreach (var dt in dates)
             {
-                double disc = yth_usdlib12m.discount(dt);
-                discv2.Add(disc);
-            }*/
+                dtv.Add(dt);
+
+                value = piecewiseCurve.defaultDensity(dt);
+                defaultdensity.Add(value);
+                value = piecewiseCurve.hazardRate(dt);
+                hazardrate.Add(value);
+                value = piecewiseCurve.survivalProbability(dt);
+                survivalprobability.Add(value);
+                value = piecewiseCurve.defaultProbability(dt);
+                defaultprobability.Add(value);
+            }
+
+            ////////////////////////////////////////// rebuild curve and reprice /////////////////////////////////////////////////////
+            QLEX.DefaultProbabilityTermStructure dts = new HazardRateCurve(dtv, hazardrate, dc);                // backward flat
+            DefaultProbabilityTermStructureHandle dth = new DefaultProbabilityTermStructureHandle(dts);
+            List<double> dfcurves = new List<double>();
+            foreach (var dt in dates)
+            {
+                value = dth.hazardRate(dt);
+                dfcurves.Add(value);
+            }
 
             /////////////////////// reprice /////////////////////////////////////////
-            /*
-            double notional = 1.0;
-            double tolerance = 1.0e-6;
+            double notional = 100.0;
+            bool settlesAccrual = true;
+            bool paysAtDefaultTime = true;
+
+            List<double> reprices = new List<double>();
 
             // ensure apple-to-apple comparison
             Settings.instance().includeTodaysCashFlows(true);
 
             for (int i = 0; i < n.Length; i++)
             {
+                // See class CdsHelper
                 Date protectionStart = today + settlementDays;
                 Date startDate = cal_cds.adjust(protectionStart, convention);
-                Date endDate = today + n[i] * TimeUnit.Years;
+                Date endDate = today.Add(new Period(n[i], TimeUnit.Years));
 
                 Schedule schedule = new Schedule(startDate, endDate, new Period(frequency), cal_cds,
-                                  convention, Unadjusted, rule, false);
+                    convention, BusinessDayConvention.Unadjusted, rule, false);
 
-            CreditDefaultSwap cds = new CreditDefaultSwap(Protection::Buyer, notional, quote[i],
-                                  schedule, convention, dayCounter,
-                                  true, true, protectionStart);
-                PricingEngine engine = new MidPointCdsEngine();
-                
-            cds.setPricingEngine(boost::shared_ptr<PricingEngine>(
-                           new MidPointCdsEngine(piecewiseCurve, recoveryRate,
-                                                 discountCurve)));
+                CreditDefaultSwap cds = new CreditDefaultSwap(Protection.Side.Buyer, notional, 0.0, 0.01,
+                    schedule, convention, dc, settlesAccrual, paysAtDefaultTime);
 
-            // test
-            double inputRate = quote[i];
-            double computedRate = cds.fairSpread();*/
+                PricingEngine engine = new MidPointCdsEngine(dth, recoveryRate, discountCurve);
+                cds.setPricingEngine(engine);
+
+                // test
+                double inputRate = quote[i];
+                double computedRate = cds.fairSpread();
+                reprices.Add(computedRate);
+            }
+
+            Console.WriteLine("done");
         }
 
         [TestMethod]
@@ -1194,33 +1217,211 @@ namespace QLEXUnitTest
         }
 
         [TestMethod]
-        public void TestHullWhiteSimulation()
+        public void TestHullWhiteCalibration()
         {
-            Date asofDate = new Date((int)DateTime.Today.ToOADate());
+            Date today = new Date(15, Month.February, 2002);
+            Date settlement = new Date(19, Month.February, 2002);
+            Settings.instance().setEvaluationDate(today);
+            YieldTermStructureHandle termStructure = new YieldTermStructureHandle(new FlatForward(settlement, 0.04875825, new Actual365Fixed()));
+            HullWhite model = new HullWhite(termStructure);
+
+            int[] startmth = new int[]
+            {
+                1,
+                2,
+                3,
+                4,
+                5
+            };
+
+            int[] lengthmth = new int[]
+            {
+                5,
+                4,
+                3,
+                2,
+                1
+            };
+            double[] vols = new double[]
+            {
+                0.1148,
+                0.1108,
+                0.1070,
+                0.1021,
+                0.1000
+            };
+
+            IborIndex index = new Euribor6M(termStructure);
+            PricingEngine engine = new JamshidianSwaptionEngine(model);     // new TreeSwaptionEngine
+
+            CalibrationHelperVector swaptions = new CalibrationHelperVector();
+
+            int i;
+            for (i = 0; i < vols.Length; i++)
+            {
+                Quote vol = new SimpleQuote(vols[i]);
+                CalibrationHelper helper = new SwaptionHelper(new Period(startmth[i], TimeUnit.Years),
+                    new Period(lengthmth[i], TimeUnit.Years), new QuoteHandle(vol), index,
+                    new Period(1, TimeUnit.Years), new Thirty360(),
+                    new Actual360(), termStructure);
+                helper.setPricingEngine(engine);
+                swaptions.Add(helper);
+
+                double value;
+                value = helper.calibrationError();
+
+                value = helper.marketValue();
+                value = helper.impliedVolatility(value, 1e-8, 5000, 0.0, 10.0);
+                value = helper.modelValue();
+            }
+            
+            // Set up the optimization problem
+            // Real simplexLambda = 0.1;
+            // Simplex optimizationMethod(simplexLambda);
+            LevenbergMarquardt optimizationMethod = new LevenbergMarquardt(1.0e-8, 1.0e-8, 1.0e-8);
+            EndCriteria endCriteria = new EndCriteria(10000, 100, 1e-6, 1e-8, 1e-8);
+
+            //Optimize
+            model.calibrate(swaptions, optimizationMethod, endCriteria);
+            
+            double aTarget = 0.0464041, simgaTarget = 0.00579912;
+            double tolerance = 1.0e-5;
+            QlArray xMinCalculated = model.parameters();
+
+            List<double> reprices0 = new List<double>();
+            List<double> reprices1 = new List<double>();
+            for (i = 0; i < swaptions.Count; i++)
+            {
+                double value;
+                value = swaptions[i].calibrationError();        
+                value = swaptions[i].marketValue();             // black prices
+                value = swaptions[i].impliedVolatility(value, 1e-8, 5000, 0.0, 10.0);
+                reprices0.Add(value);
+                value = swaptions[i].modelValue();
+                value = swaptions[i].impliedVolatility(value, 1e-8, 5000, 0.0, 10.0);
+                reprices1.Add(value);
+            }
+            //Array xMinExpected(2);
+            //xMinExpected[0] = cachedA;
+            //xMinExpected[1] = cachedSigma;
+            //Real yMinExpected = model->value(xMinExpected, swaptions);
+            Console.WriteLine("done");
+        }
+
+        [TestMethod]
+        public void TestHullWhiteCVA()
+        {
+            Date asofDate_ = new Date((int)DateTime.Today.ToOADate());
+            QLEX.Calendar calendar_ = new UnitedStates();
+            asofDate_ = calendar_.adjust(asofDate_);          
+            Settings.instance().includeTodaysCashFlows(false);
+            Settings.instance().includeReferenceDateEvents(false);
+            Settings.instance().setEvaluationDate(asofDate_);
+            DayCounter dc_ = new ActualActual();
+
+            ////////////////////////////////// Part I test Hull White process /////////////////////////////////////              
+            YieldTermStructure yts = new FlatForward(asofDate_, 0.04875825, dc_);
+            YieldTermStructureHandle ytsh = new YieldTermStructureHandle(yts);
             double a = 0.0464041, sigma = 0.00579912;
+            HullWhiteProcess process_ = new HullWhiteProcess(ytsh, a, sigma);
 
-            YieldTermStructure ts = new FlatForward(asofDate, 0.04875825, new Actual365Fixed());
-            QLEX.Calendar calendar = new UnitedStates();
+            // process dX = mu*dt + sigma*dW
+            // im particular, HW is dr = a[theta(t) - r]dt + sigma*dW
+            double r0 = ytsh.forwardRate(0.0, 0.0, Compounding.Continuous, Frequency.NoFrequency).rate();
+            double value = process_.x0();                                      // equal r0
+            value = process_.drift(1.0, 0.1);                                  // a[theta(t) - r]
+            value = process_.diffusion(1.0, 0.1);                              // sigma
+            // E[int_0_T r(s)ds] = int_0_T f(0,s)ds   but E[r(s)] != f(0,s)
+            value = process_.expectation(0.0, r0, 1.0);                        // given x0 and t0, what is codnitional mean at t
+            value = process_.stdDeviation(0.0, r0, 1.0);                       // Conditional variance and sd
+            value = process_.variance(0.0, r0, 1.0);                           // Conditional variance and sd                
+            value = process_.evolve(0.0, r0, 1.0, 0.1);                        // one step forward
 
-            Date TDate = calendar.advance(asofDate, 7, TimeUnit.Years);
-            Schedule fixedschedule = new Schedule(asofDate, TDate, new Period(Frequency.Semiannual), calendar, BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
-                DateGeneration.Rule.Forward, true);
-            Schedule floatschedule = new Schedule(asofDate, TDate, new Period(Frequency.Quarterly), calendar, BusinessDayConvention.ModifiedFollowing, BusinessDayConvention.ModifiedFollowing,
-                DateGeneration.Rule.Forward, true);
-            RelinkableYieldTermStructureHandle usdForwardingTSHandle = new RelinkableYieldTermStructureHandle(ts);
-            IborIndex usd3mIndex = new IborIndex("USDLIB3M", new Period(Frequency.Quarterly), 0, new USDCurrency(), calendar, BusinessDayConvention.ModifiedFollowing, true, new Actual365Fixed(), usdForwardingTSHandle);
+            ////////////////////////////////// Part II test Hull White model /////////////////////////////////////
+            // A(), B() are defined as protected in Vasicek and HullWhite
+            // P(t,T) = Real discountBond(Time now, Time maturity, Rate rate) const is located in OneFactorAffineModel
+            HullWhite model_ = new HullWhite(ytsh, a, sigma);
+            value = model_.discountBond(2.0, 5.0, 0.10);
+            value = model_.discountBond(0.0, 1.0, r0);
 
-            VanillaSwap swap = new VanillaSwap(_VanillaSwap.Type.Payer, 1000, fixedschedule, 0.049, new Actual365Fixed(), floatschedule, usd3mIndex, 0.0, new Actual365Fixed());
-            DiscountingSwapEngine pricingEngine = new DiscountingSwapEngine(usdForwardingTSHandle);
-            swap.setPricingEngine(pricingEngine);
-            double rate = swap.fairRate();
+            ////////////////////////////////// Part III simulatie short rate /////////////////////////////////////
+            int nSims = 1000, nSteps;
 
-            InstrumentVector portfolio = new InstrumentVector();
-            portfolio.Add(swap);
-            QLEX.RiskHullWhiteSimulationEngine engine = new QLEX.RiskHullWhiteSimulationEngine(DateTime.Today, new YieldTermStructureHandle(ts), a, sigma, portfolio, usd3mIndex, usdForwardingTSHandle);
-            engine.SampleSize = 300;
-            engine.calculate();
-            Dictionary<Date, double> ret = engine.getPFECurve(0.95);
+            // 3.1 setup sim grid
+            Date eomDate_ = Date.endOfMonth(asofDate_);
+            Date terminationDate_ = calendar_.advance(eomDate_, 10, TimeUnit.Years);        // 10 years simulation length
+            Schedule schedule_ = new Schedule(eomDate_, terminationDate_, new Period(Frequency.Monthly), calendar_, BusinessDayConvention.ModifiedFollowing,
+                BusinessDayConvention.ModifiedFollowing, DateGeneration.Rule.Backward, true);
+            DoubleVector simtimes = new DoubleVector();
+            if (asofDate_ < eomDate_)
+            {
+                simtimes.Add(0);
+            }
+            for (uint i = 0; i < schedule_.size(); i++)
+            {
+                simtimes.Add(dc_.yearFraction(asofDate_, schedule_.date(i)));
+            }
+            TimeGrid timeGrid_ = new TimeGrid(simtimes);
+            nSteps = (int)timeGrid_.size();             // with mandatory steps, this may not equal to simsteps+1
+
+            // 3.2 set up rng
+            int seed = 0;
+            UniformRandomGenerator uniformRng_ = new UniformRandomGenerator(seed);
+            // timegrid from 0 to 30Y, rsg dinension is size -1, excluding time 0;
+            UniformRandomSequenceGenerator uniformRsg_ = new UniformRandomSequenceGenerator(timeGrid_.size() - 1, uniformRng_);
+            GaussianRandomSequenceGenerator gaussianRsg_ = new GaussianRandomSequenceGenerator(uniformRsg_);
+            GaussianPathGenerator pathGenerator_ = new GaussianPathGenerator(process_, timeGrid_, gaussianRsg_, false);
+            //UniformLowDiscrepancySequenceGenerator uniformRng2_ = new UniformLowDiscrepancySequenceGenerator(timeGrid_.size() - 1);
+            //GaussianLowDiscrepancySequenceGenerator gaussianRsg2_ = new GaussianLowDiscrepancySequenceGenerator(uniformRng2_);
+            //GaussianSobolPathGenerator pathGenerator2_ = new GaussianSobolPathGenerator(process_, )
+
+            double[,] ret = new double[nSims+2, nSteps];
+            // add mean and sd on top
+            for (int mth = 0; mth < nSteps; mth++)
+            {
+                ret[0, mth] = process_.expectation(0, r0, simtimes[mth]);
+                ret[1, mth] = process_.stdDeviation(0, r0, simtimes[mth]);
+            }
+            
+            for (int sim = 0; sim < nSims; sim++)
+            {
+                SamplePath path = pathGenerator_.next();            // one short rate path
+                int steps = (int)path.value().timeGrid().size();
+                System.Diagnostics.Debug.WriteLine("Sim " + sim + "; Path time grid size is: " + steps +
+                    " from time " + path.value().time(0) +
+                    " to time " + path.value().time((uint)steps - 1));
+
+                // for each simulation step
+                for (uint mth = 0; mth < nSteps; mth++)
+                {
+                    ret[sim+2, mth] = path.value().value(mth);
+                }
+            }
+
+            MatrixFunctions.WriteMatrixToFile(ret, @"c:\letian\hwshort.csv");
+
+            ////////////////////////////////// Part IV simulatie yield curves /////////////////////////////////////
+            HDF5DotNet.H5FileId fileId = H5F.create(@"c:\letian\hwshort.h5", H5F.CreateMode.ACC_TRUNC);
+            // Create a HDF5 group.  
+            H5GroupId groupId = H5G.create(fileId, "/cSharpGroup", 0);
+            H5GroupId subGroup = H5G.create(groupId, "mySubGroup", 0);
+            ////////////////////////////////// Part V simulatie PFE /////////////////////////////////////
+
+            ////////////////////////////////// Part VI simulatie CVA /////////////////////////////////////
+
+
+            Console.WriteLine("Done");
+        }
+
+        [TestMethod]
+        public void TestHullWhiteSimulation2()
+        {
+        }
+
+        [TestMethod]
+        public void TestCVA()
+        {
+
         }
     }
 }

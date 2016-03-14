@@ -71,6 +71,24 @@ public class UpfrontCdsHelper : DefaultProbabilityHelper {
     if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
   }
 
+  public double impliedQuote() {
+    double ret = NQuantLibcPINVOKE.UpfrontCdsHelper_impliedQuote(swigCPtr);
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public QuoteHandle quote() {
+    QuoteHandle ret = new QuoteHandle(NQuantLibcPINVOKE.UpfrontCdsHelper_quote(swigCPtr), true);
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
+  public Date latestDate() {
+    Date ret = new Date(NQuantLibcPINVOKE.UpfrontCdsHelper_latestDate(swigCPtr), true);
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
 }
 
 }

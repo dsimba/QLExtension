@@ -309,7 +309,6 @@ namespace QLEXUnitTest
             List<double> npv_new2 = new List<double>();
             foreach (string tr in ois_tenors)
             {
-                /*
                 QLEX.Date sdate = cal_usd.advance(asofdate, new Period(fixingDays, QLEX.TimeUnit.Days));
                 tenor_ = QLEX.QLConverter.ConvertObject<QLEX.Period>(tr);
                 QLEX.Date tdate = cal_usd.advance(sdate, tenor_);
@@ -333,7 +332,7 @@ namespace QLEXUnitTest
                 _genswap.qlswap_.setPricingEngine(engine);
                 npv = _genswap.qlswap_.fairRate();
                 npv_new2.Add(npv);
-                i++;*/
+                i++;
             }
 
             ////////////////////////////////////////// LIB3M /////////////////////////////////////////////////////
@@ -1403,8 +1402,8 @@ namespace QLEXUnitTest
             ////////////////////////////////// Part IV simulatie yield curves /////////////////////////////////////
             HDF5DotNet.H5FileId fileId = H5F.create(@"c:\letian\hwshort.h5", H5F.CreateMode.ACC_TRUNC);
             // Create a HDF5 group.  
-            H5GroupId groupId = H5G.create(fileId, "/cSharpGroup", 0);
-            H5GroupId subGroup = H5G.create(groupId, "mySubGroup", 0);
+            //H5GroupId groupId = H5G.create(fileId, "/cSharpGroup", 0);
+           // H5GroupId subGroup = H5G.create(groupId, "mySubGroup", 0);
             ////////////////////////////////// Part V simulatie PFE /////////////////////////////////////
 
             ////////////////////////////////// Part VI simulatie CVA /////////////////////////////////////

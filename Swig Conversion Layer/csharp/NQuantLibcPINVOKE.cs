@@ -9305,6 +9305,9 @@ class NQuantLibcPINVOKE {
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_ShortRateModel_calibrate__SWIG_3")]
   public static extern void ShortRateModel_calibrate__SWIG_3(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, global::System.Runtime.InteropServices.HandleRef jarg4);
 
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_ShortRateModel_value")]
+  public static extern double ShortRateModel_value(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
+
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_new_ShortRateModelHandle__SWIG_0")]
   public static extern global::System.IntPtr new_ShortRateModelHandle__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);
 
@@ -9337,6 +9340,9 @@ class NQuantLibcPINVOKE {
 
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_ShortRateModelHandle_calibrate__SWIG_3")]
   public static extern void ShortRateModelHandle_calibrate__SWIG_3(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3, global::System.Runtime.InteropServices.HandleRef jarg4);
+
+  [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_ShortRateModelHandle_value")]
+  public static extern double ShortRateModelHandle_value(global::System.Runtime.InteropServices.HandleRef jarg1, global::System.Runtime.InteropServices.HandleRef jarg2, global::System.Runtime.InteropServices.HandleRef jarg3);
 
   [global::System.Runtime.InteropServices.DllImport("NQuantLibc", EntryPoint="CSharp_new_RelinkableShortRateModelHandle__SWIG_0")]
   public static extern global::System.IntPtr new_RelinkableShortRateModelHandle__SWIG_0(global::System.Runtime.InteropServices.HandleRef jarg1);

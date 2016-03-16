@@ -326,7 +326,8 @@ namespace QLExcel
                 {
                     // Eonia and ois shares defaults
                     //idx_default = new Eonia(h);
-                    idx_default = new OvernightIndex("USDOIS", 0, new USDCurrency(), new TARGET(), new Actual360(), h);
+                    //idx_default = new OvernightIndex("USDOIS", 0, new USDCurrency(), new TARGET(), new Actual360(), h);
+                    idx_default = new FedFunds(h);
                 }
                 else
                 {

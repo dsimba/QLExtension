@@ -118,7 +118,7 @@ namespace QLExcel
 
                 // by default
                 // endOfMonth_(1*Months<=swapTenor && swapTenor<=2*Years ? true : false),
-                bool end_of_month = false;
+                bool end_of_month = true;
                 QLEX.DayCounter fixeddc = new QLEX.Actual360();
 
                 if (!indexid.Contains('@'))
@@ -239,48 +239,48 @@ namespace QLExcel
 
         // schedule has 0:n; notionals has 0:n-1 elements
         // in cashflowvectors.hpp, it gets i or the last one if runs out
-        [ExcelFunction(Description = "Interest Rate generic swap template (TPL) ", Category = "QLExcel - Instruments")]
-        public static object qlInstIRGenericSwapTemplate(
+        [ExcelFunction(Description = "Interest Rate generic swap ", Category = "QLExcel - Instruments")]
+        public static object qlInstIRGenericSwap(
             // trade info
             /*[ExcelArgument(Description = "trade id ")] string tradeid,
             [ExcelArgument(Description = "Entity ")] string entity,
             [ExcelArgument(Description = "Entity ID ")] string entityid,
             [ExcelArgument(Description = "Counterparty ")] string counterparty,
             [ExcelArgument(Description = "Counterparty ID ")] string counterpartyid,
-            [ExcelArgument(Description = "swap type ")] string swaptype,*/
-            [ExcelArgument(Description = "swap type ")] object[] tradeinfo,
-            // date info
+            [ExcelArgument(Description = "swap type ")] string swaptype,
             [ExcelArgument(Description = "Fixing Days ")] object fixingdays,        // use object to catch missing
             [ExcelArgument(Description = "Trade Date ")] object tradedate,
             [ExcelArgument(Description = "Start date ")] object startdate,
             [ExcelArgument(Description = "Maturity date ")] object maturitydate,
             [ExcelArgument(Description = "Tenor ")] string Tenor,
+            [ExcelArgument(Description = "is notional schedule given ")] bool isschedulegiven,*/
+            [ExcelArgument(Description = "swap type ")] object[] tradeinfo,
             // first leg
             /*[ExcelArgument(Description = "id of first leg index ")] string firstlegindex,
             [ExcelArgument(Description = "first leg frequency ")] string firstlegfreq,
             [ExcelArgument(Description = "first leg convention ")] string firstlegconv,
             [ExcelArgument(Description = "first leg calendar ")] string firstlegcalendar,
             [ExcelArgument(Description = "first leg day counter ")] string firstlegdc,
-            [ExcelArgument(Description = "first leg date generation rule ")] string firstlegdgrule,*/
-            [ExcelArgument(Description = "first leg info ")] object[] firstleginfo,
+            [ExcelArgument(Description = "first leg date generation rule ")] string firstlegdgrule,
             [ExcelArgument(Description = "first leg end of month ")] bool firstlegeom,
+            [ExcelArgument(Description = "first leg fixed rate ")] double firstlegrate,*/
+            [ExcelArgument(Description = "first leg info ")] object[] firstleginfo,       
             [ExcelArgument(Description = "first leg notional(s) ")] object[] firstlegnotionals,     // only object[] works
             [ExcelArgument(Description = "first leg schedule(s) ")] object[,] firstlegschedule,
-            [ExcelArgument(Description = "first leg fixed rate ")] double firstlegrate,
             // second leg
             /*[ExcelArgument(Description = "id of second leg index ")] string secondlegindex,
             [ExcelArgument(Description = "second leg frequency  ")] string secondlegfreq,
             [ExcelArgument(Description = "second leg convention ")] string secondlegconv,
             [ExcelArgument(Description = "second leg calendar ")] string secondlegcalendar,
             [ExcelArgument(Description = "second leg day counter ")] string secondlegdc,
-            [ExcelArgument(Description = "second leg date generation rule ")] string secondlegdgrule,*/
-            [ExcelArgument(Description = "second leg info ")] object[] secondleginfo,
+            [ExcelArgument(Description = "second leg date generation rule ")] string secondlegdgrule,
             [ExcelArgument(Description = "second leg end of month ")] bool secondlegeom,
+            [ExcelArgument(Description = "second leg spread ")] double secondlegspread,*/
+            [ExcelArgument(Description = "second leg info ")] object[] secondleginfo,
             [ExcelArgument(Description = "second leg notional(s) ")] object[] secondlegnotionals,
             [ExcelArgument(Description = "second leg schedule(s) ")] object[,] secondlegschedule,
-            [ExcelArgument(Description = "second leg spread ")] double secondlegspread,
-            // given schedule
-            [ExcelArgument(Description = "is notional schedule given ")] bool isschedulegiven)
+            [ExcelArgument(Description = "id of discount curve ")] string discountId
+            )
         {
             if (ExcelUtil.CallFromWizard())
                 return "";
@@ -325,39 +325,40 @@ namespace QLExcel
                 else
                     genswap.SwapType = (string)tradeinfo[5];
 
-                if (ExcelUtil.isNull(fixingdays))
+                if (ExcelUtil.isNull(tradeinfo[6]))
                     genswap.FixingDays = 2;
                 else
-                    genswap.FixingDays = (int)(double)fixingdays;
+                    genswap.FixingDays = (int)(double)tradeinfo[6];
 
-                if (ExcelUtil.isNull(tradedate))
+                if (ExcelUtil.isNull(tradeinfo[7]))
                     genswap.TradeDate = QLEX.QLConverter.DateTimeToString(DateTime.Today);
                 else
-                    genswap.TradeDate = QLEX.QLConverter.DateTimeToString(DateTime.FromOADate((double)tradedate));
+                    genswap.TradeDate = QLEX.QLConverter.DateTimeToString(DateTime.FromOADate((double)tradeinfo[7]));
 
                 // set it temporarily to ""
-                if (ExcelUtil.isNull(startdate))
+                if (ExcelUtil.isNull(tradeinfo[8]))
                     genswap.SettlementDate = string.Empty;
                 else
-                    genswap.SettlementDate = QLEX.QLConverter.DateTimeToString(DateTime.FromOADate((double)startdate));
+                    genswap.SettlementDate = QLEX.QLConverter.DateTimeToString(DateTime.FromOADate((double)tradeinfo[8]));
 
                 // set it temporarily to today
-                if (ExcelUtil.isNull(maturitydate))
+                if (ExcelUtil.isNull(tradeinfo[9]))
                     genswap.MaturityDate = string.Empty;
                 else
-                    genswap.MaturityDate = QLEX.QLConverter.DateTimeToString(DateTime.FromOADate((double)maturitydate));
+                    genswap.MaturityDate = QLEX.QLConverter.DateTimeToString(DateTime.FromOADate((double)tradeinfo[9]));
 
                 // set it temporarily to blank
-                if (ExcelUtil.isNull(Tenor))
+                if (ExcelUtil.isNull(tradeinfo[10]))
                     genswap.Tenor = string.Empty;
                 else
-                    genswap.Tenor = Tenor;
+                    genswap.Tenor = (string)tradeinfo[10];
 
-                if (ExcelUtil.isNull(isschedulegiven))
+                if (ExcelUtil.isNull(tradeinfo[11]))
                     genswap.IsScheduleGiven = false;
                 else
-                    genswap.IsScheduleGiven = isschedulegiven;
-                genswap.IsScheduleGiven = false;        // set to false always
+                    //genswap.IsScheduleGiven = Convert.ToBoolean((string)tradeinfo[11]);
+                    genswap.IsScheduleGiven = (bool)tradeinfo[11];
+                genswap.IsScheduleGiven = false;        // set to false always, amortization currently not supported
 
                 //***************  First Leg *************************//
                 if (ExcelUtil.isNull(firstleginfo[0]))
@@ -376,7 +377,7 @@ namespace QLExcel
                     genswap.FirstLegConvention = (string)firstleginfo[2];
 
                 if (ExcelUtil.isNull(firstleginfo[3]))
-                    genswap.FirstLegCalendar = "NYC";           // nor NYC|LON
+                    genswap.FirstLegCalendar = "NYC|LON";
                 else
                     genswap.FirstLegCalendar = (string)firstleginfo[3];
 
@@ -390,10 +391,15 @@ namespace QLExcel
                 else
                     genswap.FirstLegDateGenerationRule = (string)firstleginfo[5];
 
-                if (ExcelUtil.isNull(firstlegeom))
+                if (ExcelUtil.isNull(firstleginfo[6]))
                     genswap.FirstLegEOM = true;
                 else
-                    genswap.FirstLegEOM = firstlegeom;
+                    genswap.FirstLegEOM = (bool)firstleginfo[6];
+
+                if (ExcelUtil.isNull(firstleginfo[7]))
+                    genswap.FirstLegSpread = 0.0;
+                else
+                    genswap.FirstLegSpread = (double)firstleginfo[7];
 
                 if (ExcelUtil.isNull(firstlegnotionals))
                 {
@@ -438,11 +444,6 @@ namespace QLExcel
                     }
                 }
 
-                if (ExcelUtil.isNull(firstlegrate))
-                    genswap.FixedRate = 0.0;
-                else
-                    genswap.FixedRate = firstlegrate;
-
                 //***************  Second Leg *************************//
 
                 if (ExcelUtil.isNull(secondleginfo[0]))
@@ -461,7 +462,7 @@ namespace QLExcel
                     genswap.SecondLegConvention = (string)secondleginfo[2];
 
                 if (ExcelUtil.isNull(secondleginfo[3]))
-                    genswap.SecondLegCalendar = "NYC";           // nor NYC|LON
+                    genswap.SecondLegCalendar = "NYC|LON";           // nor NYC|LON
                 else
                     genswap.SecondLegCalendar = (string)secondleginfo[3];
 
@@ -475,10 +476,15 @@ namespace QLExcel
                 else
                     genswap.SecondLegDateGenerationRule = (string)secondleginfo[5];
 
-                if (ExcelUtil.isNull(secondlegeom))
+                if (ExcelUtil.isNull(secondleginfo[6]))
                     genswap.SecondLegEOM = true;
                 else
-                    genswap.SecondLegEOM = secondlegeom;
+                    genswap.SecondLegEOM = (bool)secondleginfo[6];
+
+                if (ExcelUtil.isNull(secondleginfo[7]))
+                    genswap.SecondLegSpread = 0.0;
+                else
+                    genswap.SecondLegSpread = (double)secondleginfo[7];
 
                 if (ExcelUtil.isNull(secondlegnotionals))
                 {
@@ -523,83 +529,31 @@ namespace QLExcel
                     }
                 }
 
-                if (ExcelUtil.isNull(secondlegspread))
-                    genswap.Spread = 0.0;
-                else
-                    genswap.Spread = secondlegspread;
                 #endregion
 
                 #region convert Interest rate generic swap to swap obj
-                // do elsewhere
-                #endregion
+                string firstidx = genswap.FirstLegIndex, secondidx = genswap.SecondLegIndex;
+                string firstidx_id = "IDX@" + firstidx;
+                string secondidx_id = "IDX@" + secondidx;
+                QLEX.IborIndex firstidx_obj = null;
+                if (!firstidx.Contains("FIXED"))
+                    firstidx_obj = OHRepository.Instance.getObject<QLEX.IborIndex>(firstidx_id);
+                
+                QLEX.IborIndex secondidx_obj = OHRepository.Instance.getObject<QLEX.IborIndex>(secondidx_id);
 
-                // update settlement date and maturity date
-
-                string id = "SWP@" + genswap.ContractId + "_TPL";
-                OHRepository.Instance.storeObject(id, genswap, callerAddress);
-                id += "#" + (String)DateTime.Now.ToString(@"HH:mm:ss");
-                return id;
-            }
-            catch (Exception e)
-            {
-                ExcelUtil.logError(callerAddress, System.Reflection.MethodInfo.GetCurrentMethod().Name.ToString(), e.Message);
-                return "#QL_ERR!";
-            }
-        }
-
-
-        // TODO: if isxchedulegiven, read from the excel schedule input instead of generating schedule
-        // for now customerized schedule is not supported because in schedule fullInterface_(false) is turned off
-        //      leading to crash in FixedRateLeg::operator Leg() 
-        [ExcelFunction(Description = "Construct genswap from genswap template ", Category = "QLExcel - Instruments")]
-        public static object qlInstIRGenericSwap(
-            [ExcelArgument(Description = "trade id ")] string tradeid,
-            [ExcelArgument(Description = "id of discount curve ")] string discountId,
-            [ExcelArgument(Description = "trigger ")]object trigger)
-        {
-            if (ExcelUtil.CallFromWizard())
-                return "";
-
-            string callerAddress = "";
-            callerAddress = ExcelUtil.getActiveCellAddress();
-
-            try
-            {
-                //string tradeid_ = tradeid;
-                /*if (tradeid_.IndexOf('#') != -1)            // get rid of time
-                {
-                    tradeid_ = tradeid_.Substring(0, tradeid_.IndexOf('#'));
-                }
-                if (tradeid_.IndexOf("_TPL") != -1)            // get rid of _TPL
-                {
-                    tradeid_ = tradeid_.Substring(0, tradeid_.IndexOf("_TPL"));
-                }*/
-                string genswaptplid_ = tradeid;
-                if (!genswaptplid_.Contains('@'))
-                {
-                    genswaptplid_ = "SWP@" + genswaptplid_;
-                }
-                if (!genswaptplid_.Contains("_TPL"))
-                {
-                    genswaptplid_ = genswaptplid_ + "_TPL";
-                }
-
-                QLEX.Instruments.InterestRateGenericSwap genswaptpl = OHRepository.Instance.getObject<QLEX.Instruments.InterestRateGenericSwap>(genswaptplid_);
+                genswap.ConstructSwap(firstidx_obj, secondidx_obj);
 
                 if (!discountId.Contains('@'))
                     discountId = "CRV@" + discountId;
                 YieldTermStructure discountcurve = OHRepository.Instance.getObject<YieldTermStructure>(discountId);
                 YieldTermStructureHandle dch = new YieldTermStructureHandle(discountcurve);
 
-                #region conversion
-                //************************** trade info *******************************
-                genswaptpl.ConstructSwap(null, null);
-                #endregion
                 DiscountingSwapEngine engine = new DiscountingSwapEngine(dch);
-                genswaptpl.qlswap_.setPricingEngine(engine);
+                genswap.qlswap_.setPricingEngine(engine);
+                #endregion
 
-                string id = "SWP@" + genswaptpl.ContractId;
-                OHRepository.Instance.storeObject(id, genswaptpl, callerAddress);
+                string id = "SWP@" + genswap.ContractId;
+                OHRepository.Instance.storeObject(id, genswap, callerAddress);
                 id += "#" + (String)DateTime.Now.ToString(@"HH:mm:ss");
                 return id;
             }
@@ -832,7 +786,7 @@ namespace QLExcel
                 ret.Add(genswaptpl.FirstLegDayCounter);
                 ret.Add(genswaptpl.FirstLegDateGenerationRule);
                 ret.Add(genswaptpl.FirstLegEOM.ToString());
-                ret.Add(genswaptpl.FixedRate.ToString());
+                ret.Add(genswaptpl.FirstLegSpread.ToString());
                 if (genswaptpl.FirstLegNotionals.Count > 1)
                 {
                     ret.Add("Collection...");
@@ -849,7 +803,7 @@ namespace QLExcel
                 ret.Add(genswaptpl.SecondLegDayCounter);
                 ret.Add(genswaptpl.SecondLegDateGenerationRule);
                 ret.Add(genswaptpl.SecondLegEOM.ToString());
-                ret.Add(genswaptpl.Spread.ToString());
+                ret.Add(genswaptpl.SecondLegSpread.ToString());
                 if (genswaptpl.SecondLegNotionals.Count > 1)
                 {
                     ret.Add("Collection...");

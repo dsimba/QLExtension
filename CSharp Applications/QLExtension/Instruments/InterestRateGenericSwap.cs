@@ -42,7 +42,7 @@ namespace QLEX.Instruments
         public List<double> FirstLegNotionals {get; set;}      // from start to end, n+1 days and n periods ==> n (beginning) notionals
         public List<string> FirstLegSchedules { get; set; }            // flexible schedules, e.g., counting for stub
 
-        public double FixedRate { get; set; }
+        public double FirstLegSpread { get; set; }
         
         #endregion
 
@@ -57,7 +57,7 @@ namespace QLEX.Instruments
         public List<double> SecondLegNotionals {get; set;}
         public List<string> SecondLegSchedules { get; set; }             // flexible schedules, e.g., counting for stub
 
-        public double Spread { get; set; }
+        public double SecondLegSpread { get; set; }
 
         [XmlIgnore]
         public QLEX.GenericSwap qlswap_ = null;
@@ -94,7 +94,7 @@ namespace QLEX.Instruments
             FirstLegSchedules = new List<string>();
             FirstLegSchedules.Add(SettlementDate);
             FirstLegSchedules.Add(MaturityDate);
-            FixedRate = 0.04;
+            FirstLegSpread = 0.04;
 
             SecondLegIndex = "USDLIB3M";
             SecondLegFrequency = "Quarterly";
@@ -110,7 +110,7 @@ namespace QLEX.Instruments
             SecondLegSchedules.Add(MaturityDate);
             SecondLegEOM = true;
             
-            Spread = 0.0;
+            SecondLegSpread = 0.0;
 
             IsScheduleGiven = true;
         }
@@ -195,20 +195,20 @@ namespace QLEX.Instruments
                 {
                     if (hasois)
                     {
-                        qlswap_ = new GenericSwap(type, notional2, Schedule2, Schedule2, FixedRate, dc2,
-                                                 notional2, Schedule2, Schedule2, idx2, dc2, Spread, hasois);
+                        qlswap_ = new GenericSwap(type, notional2, Schedule2, Schedule2, FirstLegSpread, dc2,
+                                                 notional2, Schedule2, Schedule2, idx2, dc2, SecondLegSpread, hasois);
                     }
                     else
                     {
-                        qlswap_ = new GenericSwap(type, notional1, Schedule1, Schedule1, FixedRate, dc1,
-                                                 notional2, Schedule2, Schedule2, idx2, dc2, Spread, hasois);
+                        qlswap_ = new GenericSwap(type, notional1, Schedule1, Schedule1, FirstLegSpread, dc1,
+                                                 notional2, Schedule2, Schedule2, idx2, dc2, SecondLegSpread, hasois);
                     }
                     
                 }
                 else
                 {
                     qlswap_ = new GenericSwap(type, notional1, Schedule1, Schedule1, idx1, dc1,
-                                                 notional2, Schedule2, Schedule2, idx2, dc2, 0.0, Spread, hasois);
+                                                 notional2, Schedule2, Schedule2, idx2, dc2, 0.0, SecondLegSpread, hasois);
                 }
             }  // end of schedule given swap construction
             else
@@ -285,19 +285,19 @@ namespace QLEX.Instruments
                 {
                     if (hasois)
                     {
-                        qlswap_ = new GenericSwap(type, notional2, schedule2, schedule2, FixedRate, dc2,
-                                                 notional2, schedule2, schedule2, idx2, dc2, Spread, hasois);
+                        qlswap_ = new GenericSwap(type, notional2, schedule2, schedule2, FirstLegSpread, dc2,
+                                                 notional2, schedule2, schedule2, idx2, dc2, SecondLegSpread, hasois);
                     }
                     else
                     {
-                        qlswap_ = new GenericSwap(type, notional1, schedule1, schedule1, FixedRate, dc1,
-                                                 notional2, schedule2, schedule2, idx2, dc2, Spread, hasois);
+                        qlswap_ = new GenericSwap(type, notional1, schedule1, schedule1, FirstLegSpread, dc1,
+                                                 notional2, schedule2, schedule2, idx2, dc2, SecondLegSpread, hasois);
                     }
                 }
                 else
                 {
                     qlswap_ = new GenericSwap(type, notional1, schedule1, schedule1, idx1, dc1,
-                                                 notional2, schedule2, schedule2, idx2, dc2, 0.0, Spread, hasois);
+                                                 notional2, schedule2, schedule2, idx2, dc2, 0.0, SecondLegSpread, hasois);
                 }
             } // end of schedule not given swap construction
         }

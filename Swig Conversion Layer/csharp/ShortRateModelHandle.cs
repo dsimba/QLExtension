@@ -92,6 +92,12 @@ public class ShortRateModelHandle : global::System.IDisposable {
     if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
   }
 
+  public double value(QlArray arg0, CalibrationHelperVector instruments) {
+    double ret = NQuantLibcPINVOKE.ShortRateModelHandle_value(swigCPtr, QlArray.getCPtr(arg0), CalibrationHelperVector.getCPtr(instruments));
+    if (NQuantLibcPINVOKE.SWIGPendingException.Pending) throw NQuantLibcPINVOKE.SWIGPendingException.Retrieve();
+    return ret;
+  }
+
 }
 
 }

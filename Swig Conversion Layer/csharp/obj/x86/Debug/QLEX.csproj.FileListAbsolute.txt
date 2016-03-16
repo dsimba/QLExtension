@@ -7,4 +7,5 @@ C:\Letian\QLExtension\Output\Debug\QLEX.dll
 C:\Letian\QLExtension\Output\Debug\QLEX.pdb
 C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Debug\QLEX.dll
 C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Debug\QLEX.pdb
-C:\Letian\QLExtension\QLExtension\Swig Conversion Layer\csharp\obj\x86\Debug\QLEX.csprojResolveAssemblyReference.cache
+C:\Letian\QLExtension\Output\Debug\x86\QLEX.dll
+C:\Letian\QLExtension\Output\Debug\x86\QLEX.pdb

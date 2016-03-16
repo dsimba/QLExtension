@@ -25,9 +25,14 @@ namespace QLExcel
     
     public class RateHelpers
     {
-        //static QLEX.Calendar cal_gbp = new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange);
-        //static QLEX.Calendar cal_usd = new QLEX.UnitedStates(QLEX.UnitedStates.Market.Settlement);
-        //static QLEX.JointCalendar cal_usd_libor = new QLEX.JointCalendar(cal_gbp, cal_usd, QLEX.JointCalendarRule.JoinHolidays);
+        static QLEX.Calendar cal_gbp = new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange);
+        static QLEX.Calendar cal_usd = new QLEX.UnitedStates(QLEX.UnitedStates.Market.Settlement);
+        static QLEX.JointCalendar cal_usd_gbp = new QLEX.JointCalendar(cal_gbp, cal_usd, QLEX.JointCalendarRule.JoinHolidays);
+        static QLEX.DayCounter dc_act_360 = new QLEX.Actual360();
+        static QLEX.DayCounter dc_30_360 = new QLEX.Thirty360();
+        static QLEX.BusinessDayConvention bdc_usd = QLEX.BusinessDayConvention.ModifiedFollowing;
+        static bool eom_usd = true;
+        static int fixingDays_usd = 2;
 
         #region LIB3M
         [ExcelFunction(Description = "create deposit rate helper", Category = "QLExcel - Rates")]
@@ -46,17 +51,18 @@ namespace QLExcel
             try
             {
                 // use default value
-                QLEX.IborIndex idx = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
+                // // "london stock exchange"; "Actual/360"; "fixingDays = 2", "MF", "eom = true"
+                QLEX.IborIndex idx_usdlibor = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
                 if (ExcelUtil.isNull(fixingDays))
                 {
-                    fixingDays = (int)idx.fixingDays();
+                    fixingDays = (int)idx_usdlibor.fixingDays();
                 }
 
                 QLEX.QuoteHandle quote_ = new QLEX.QuoteHandle(new QLEX.SimpleQuote(Quote));
                 QLEX.Period tenor_ = QLEX.QLConverter.ConvertObject<QLEX.Period>(Tenor);
 
-                QLEX.RateHelper rh = new QLEX.DepositRateHelper(quote_, tenor_, (uint)fixingDays, idx.fixingCalendar(),
-                    idx.businessDayConvention(), idx.endOfMonth(), idx.dayCounter());
+                QLEX.RateHelper rh = new QLEX.DepositRateHelper(quote_, tenor_, (uint)fixingDays, cal_usd,
+                    bdc_usd, eom_usd, dc_act_360);
 
                 string id = "RHDEP@" + ObjectId;
                 OHRepository.Instance.storeObject(id, rh, callerAddress);
@@ -69,6 +75,10 @@ namespace QLExcel
             }
         }
 
+        /// <summary>
+        /// March contract fixes/expires at 3rd Wednesday, for the next 90days
+        /// first four non main-cycle months
+        /// </summary>
         [ExcelFunction(Description = "create future rate helper", Category = "QLExcel - Rates")]
         public static string qlIRCurveFuturesRateHelper(
             [ExcelArgument(Description = "(String) id of rate helper object ")] String ObjectId,
@@ -92,21 +102,16 @@ namespace QLExcel
 
                 QLEX.QuoteHandle quote_ = new QLEX.QuoteHandle(new QLEX.SimpleQuote(price));
                 QLEX.QuoteHandle conv_ = new QLEX.QuoteHandle(new QLEX.SimpleQuote(convadj));
-                
-                QLEX.Date immdate = QLEX.IMM.nextDate(settlementdate, false);
+
+                QLEX.Date imm_startdate = QLEX.IMM.nextDate(settlementdate, false);
                 for (int i = 0; i < order-1; i++)
                 {
-                    immdate = QLEX.IMM.nextDate(idx.fixingCalendar().advance(immdate,1, QLEX.TimeUnit.Days), false);
+                    imm_startdate = QLEX.IMM.nextDate(cal_usd_gbp.advance(imm_startdate, 1, QLEX.TimeUnit.Days), false);
                 }
 
-                QLEX.Date enddate = QLEX.IMM.nextDate(idx.fixingCalendar().advance(immdate, 1, QLEX.TimeUnit.Days), false);
-                for (int i = 0; i < 3-1; i++)
-                {
-                    enddate = QLEX.IMM.nextDate(idx.fixingCalendar().advance(enddate, 1, QLEX.TimeUnit.Days), false);
-                }
+                QLEX.Date enddate = imm_startdate + 90;
 
-                QLEX.RateHelper rh = new QLEX.FuturesRateHelper(quote_, immdate, enddate, 
-                    idx.dayCounter(), conv_);
+                QLEX.RateHelper rh = new QLEX.FuturesRateHelper(quote_, imm_startdate, enddate, dc_act_360, conv_);
 
                 string id = "RHED@" + ObjectId;
                 OHRepository.Instance.storeObject(id, rh, callerAddress);
@@ -125,6 +130,7 @@ namespace QLExcel
             [ExcelArgument(Description = "(double) quote of swap rate ")] double quote,
             [ExcelArgument(Description = "(String) forward start month, e.g. 7D, 3M ")] String Tenor,
             [ExcelArgument(Description = " spread ")] double spread,
+            [ExcelArgument(Description = " name of swap curve(USDLIB3M, USDLIB1M, USDLIB6M, USDLIB12M) ")] string idx,
             [ExcelArgument(Description = " id of discount curve (USDOIS) ")] string discount,
             [ExcelArgument(Description = "trigger ")]object trigger)
         {
@@ -136,8 +142,7 @@ namespace QLExcel
             try
             {
                 // use default value
-                QLEX.IborIndex idx = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
-                QLEX.DayCounter fixeddc = new QLEX.Thirty360();
+                QLEX.IborIndex idx_usdlibor = null;
 
                 QLEX.QuoteHandle rate_ = new QLEX.QuoteHandle(new QLEX.SimpleQuote(quote));
                 QLEX.Period tenor_ = QLEX.QLConverter.ConvertObject<QLEX.Period>(Tenor);
@@ -150,10 +155,33 @@ namespace QLExcel
 
                 QLEX.RateHelper rh = null;
 
+                if (ExcelUtil.isNull(idx))
+                {
+                    idx_usdlibor = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
+                }
+                else
+                {
+                    switch (idx)
+                    {
+                        case "USDLIB1M":
+                            idx_usdlibor = new QLEX.USDLibor(new QLEX.Period(1, QLEX.TimeUnit.Months));
+                            break;
+                        case "USDLIB6M":
+                            idx_usdlibor = new QLEX.USDLibor(new QLEX.Period(6, QLEX.TimeUnit.Months));
+                            break;
+                        case "USDLIB12M":
+                            idx_usdlibor = new QLEX.USDLibor(new QLEX.Period(12, QLEX.TimeUnit.Months));
+                            break;
+                        default:
+                            idx_usdlibor = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
+                            break;
+                    }
+                }
+
                 if (ExcelUtil.isNull(discount))
                 {
                     rh = new QLEX.SwapRateHelper(rate_, tenor_,
-                        idx.fixingCalendar(), QLEX.Frequency.Semiannual, idx.businessDayConvention(), fixeddc, idx);
+                        cal_usd_gbp, QLEX.Frequency.Semiannual, bdc_usd, dc_30_360, idx_usdlibor);
                 }
                 else
                 {
@@ -163,8 +191,8 @@ namespace QLExcel
                     QLEX.YieldTermStructure curve = OHRepository.Instance.getObject<QLEX.YieldTermStructure>(discount);
                     QLEX.YieldTermStructureHandle yth = new QLEX.YieldTermStructureHandle(curve);
                     rh = new QLEX.SwapRateHelper(rate_, tenor_,
-                        idx.fixingCalendar(), QLEX.Frequency.Semiannual, idx.businessDayConvention(), fixeddc,
-                        idx, spread_, new QLEX.Period(0, QLEX.TimeUnit.Days), yth);
+                        cal_usd_gbp, QLEX.Frequency.Semiannual, bdc_usd, dc_30_360,
+                        idx_usdlibor, spread_, new QLEX.Period(0, QLEX.TimeUnit.Days), yth);
                 }
 
                 string id = "RHSWP@" + ObjectId;
@@ -195,14 +223,14 @@ namespace QLExcel
 
             try
             {
-                // use default value. Eonia and ois has same convention
-                QLEX.OvernightIndex idx = new QLEX.Eonia();
-                
+                // "us settlement"; "Actual/360"; "fixingDays = 0", "F", "eom = true"
+                QLEX.FedFunds idx_ff = new QLEX.FedFunds();
+
                 QLEX.QuoteHandle rate_ = new QLEX.QuoteHandle(new QLEX.SimpleQuote(quote));
                 QLEX.Period tenor_ = QLEX.QLConverter.ConvertObject<QLEX.Period>(Tenor);
 
                 // USSO
-                QLEX.RateHelper rh = new QLEX.OISRateHelper(2, tenor_,  rate_, idx);
+                QLEX.RateHelper rh = new QLEX.OISRateHelper((uint)fixingDays_usd, tenor_,  rate_, idx_ff);
 
                 string id = "RHOIS@" + ObjectId;
                 OHRepository.Instance.storeObject(id, rh, callerAddress);
@@ -331,7 +359,7 @@ namespace QLExcel
         public static string qlIRCurveLinearZero(
             [ExcelArgument(Description = "(String) id of curve (USDOIS, USDLIB3M) ")] string ObjectId,
             [ExcelArgument(Description = "array of rate helpers ")] object[] ratehelpers,
-            [ExcelArgument(Description = "Interpolation Method (Linear, LogLinear) ")] string interp,
+            [ExcelArgument(Description = "Interpolation Method (default LogLinear) ")] string interp,
             [ExcelArgument(Description = "trigger ")]object trigger)
         {
             if (ExcelUtil.CallFromWizard())
@@ -352,13 +380,10 @@ namespace QLExcel
                     interpmethod = interp.ToUpper();
                 }
 
-                QLEX.IborIndex idx = new QLEX.USDLibor(new QLEX.Period(3, QLEX.TimeUnit.Months));
                 QLEX.RateHelperVector rhv = new QLEX.RateHelperVector();
 
                 QLEX.Date today = QLEX.Settings.instance().getEvaluationDate();
-                QLEX.Date settlementdate = idx.fixingCalendar().advance(today, 2, QLEX.TimeUnit.Days);
                 List<QLEX.Date> dates = new List<QLEX.Date>();
-                //dates.Add(settlementdate);
                 dates.Add(today);       // today has discount 1
 
                 foreach(var rid in ratehelpers)
@@ -379,7 +404,7 @@ namespace QLExcel
                 }
 
                 // set reference date to today. or discount to 1
-                QLEX.YieldTermStructure yth = new QLEX.PiecewiseLinearZero(today, rhv, idx.dayCounter());
+                QLEX.YieldTermStructure yth = new QLEX.PiecewiseLogLinearDiscount(today, rhv, dc_act_360);
 
                 QLEX.DateVector dtv = new QLEX.DateVector();
                 QLEX.DoubleVector discv = new QLEX.DoubleVector();
@@ -393,16 +418,8 @@ namespace QLExcel
                 // reconstruct the discount curve
                 // note that discount curve is LogLinear
                 QLEX.YieldTermStructure yth2 = null;
-
-                if (interpmethod == "LINEAR")
-                {
-                    yth2 = new QLEX.LinearDiscountCurve(dtv, discv, idx.dayCounter(), idx.fixingCalendar());
-                }
-                else
-                {
-                    yth2 = new QLEX.DiscountCurve(dtv, discv, idx.dayCounter(), idx.fixingCalendar());
-                } 
-
+                yth2 = new QLEX.DiscountCurve(dtv, discv, dc_act_360, ObjectId.Contains("OIS") ? cal_usd : cal_usd_gbp);
+           
                 if (!ObjectId.Contains('@'))
                     ObjectId = "CRV@" + ObjectId;
 

@@ -190,6 +190,7 @@ namespace QLExcel
         public static object qlInstGetInstrumentNPV(
             [ExcelArgument(Description = "id of instrument ")] string ObjectId,
             [ExcelArgument(Description = "Greek type ")]string gtype,
+            [ExcelArgument(Description = "is genericswap ")]bool isgenswap,
             [ExcelArgument(Description = "trigger ")]object trigger)
         {
             if (ExcelUtil.CallFromWizard())
@@ -201,7 +202,25 @@ namespace QLExcel
             try
             {
                 Xl.Range rng = ExcelUtil.getActiveCellRange();
-                Instrument inst = OHRepository.Instance.getObject<Instrument>(ObjectId);
+
+                bool isgenswap_ = false;
+                if (ExcelUtil.isNull(isgenswap))
+                    isgenswap_ = false;
+                else
+                    isgenswap_ = (bool)isgenswap;
+
+                Instrument inst = null;
+                if (isgenswap_)
+                {
+                    QLEX.Instruments.InterestRateGenericSwap genswap = OHRepository.Instance.getObject<QLEX.Instruments.InterestRateGenericSwap>(ObjectId);
+                    inst = genswap.qlswap_;
+                }
+                else
+                {
+                    inst = OHRepository.Instance.getObject<Instrument>(ObjectId);
+                }
+                
+                
                 double ret = inst.NPV();
 
                 Type type = inst.GetType();
@@ -219,7 +238,7 @@ namespace QLExcel
                         ret = (inst as OvernightIndexedSwap).fairRate();
                     }
                 }
-                else if (type == typeof(GenericSwap))
+                else if (type == typeof(QLEX.Instruments.InterestRateGenericSwap))
                 {
                     if (gtype.ToUpper() == "FAIRRATE")
                     {

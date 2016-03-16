@@ -374,13 +374,13 @@ namespace QLEX
                 case "NYC":
                     return (new QLEX.UnitedStates(QLEX.UnitedStates.Market.Settlement));
                 case "LON":
-                    return (new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Settlement));
+                    return (new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange));
                 case "NYC|LON":
                 case "LON|NYC":
                     return (new QLEX.JointCalendar(
                         new QLEX.UnitedStates(QLEX.UnitedStates.Market.Settlement),
-                        new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Settlement),
-                        QLEX.JointCalendarRule.JoinBusinessDays));
+                        new QLEX.UnitedKingdom(QLEX.UnitedKingdom.Market.Exchange),
+                        QLEX.JointCalendarRule.JoinHolidays));
                 default:
                     throw new ArgumentOutOfRangeException("Unknown Financial Center.");
             }
